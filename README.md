@@ -1,1 +1,1 @@
- ark-pzpi-23-6-sytnyk-polina
+ark-pzpi-23-6-sytnyk-polina
