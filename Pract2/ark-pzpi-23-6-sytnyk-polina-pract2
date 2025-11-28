@@ -172,7 +172,7 @@ Extract Class — виділяє пов’язані дані та методи 
 Головна мета — чистий, підтримуваний код, який легко тестувати та розвивати.
 
 ВИКОРИСТАНІ ДЖЕРЕЛА
-1.Programming Concepts - C#. Microsoft Learn: Build skills that open doors in your career. URL: https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/ 
+1.Design Patterns and Refactoring. Design Patterns & Refactoring. URL: https://sourcemaking.com/refactoring 
 2.Robert C. Martin — Clean Code: A Handbook of Agile Software Craftsmanship. URL: https://github.com/Gatjuat-Wicteat-Riek/clean-code-book
 
 ДОДАТОК А
