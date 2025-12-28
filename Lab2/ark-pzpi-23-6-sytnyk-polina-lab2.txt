@@ -1,1 +1,244 @@
+Міністерство освіти і науки України 
+Харківський національний університет радіоелектроніки
+
+
+Кафедра «Програмна інженерія»
+
+
+ЗВІТ
+з лабораторної роботи №2 
+з дисципліни «Аналіз та рефакторинг коду»
+
+
+
+
+Виконала:	                                                                    Прийняв:
+ст. гр. ПЗПІ-23-6	                                                            асистент кафедри ПІ
+Ситник П.А.	                                                                  Дашенков Д.С.
+
+
+
+
+
+
+
+
+
+
+Харків 2025
+1 ЗАВДАННЯ
+1.	Розробити будову програмної системи.
+2.	Створити UML діаграму прецедентів для серверної частини системи.
+3.	Створити ER діаграму даних.
+4.	Розробити базу даних (БД) програмної системи.
+5.	Створити діаграму структури БД.
+6.	Розробити функції роботи з БД (ORM або CoRM тощо).
+7.	Розробити API (REST або GraphQL, gRPC тощо) для взаємодії серверної частини з клієнтами.
+8.	Створити специфікацію розробленого API.
+9.	Створити програмну реалізацію розробленого API та функцій роботи з БД.
+10.Перевірити роботу створеного програмного коду серверної частини системи.
+11.Завантажити або оновити (при потребі) створений програмний код у GitHub репозиторій для лабораторних робіт у гілку репозиторію main.  12.Створити відеозапис тривалістю 7-9 хвилин з демонстрацією перевірки (тестування) описаної у розділі 3.1 Vision & Scope функціональності серверної частини.
+13.Завантажити створений відеозапис у свій канал для облікового запису студента в домені nure.ua на YouTube. При завантаженні відеозапису обовʼязково встановити у налаштуваннях для цього відео українську мову як мову відео та мову субтитрів до відео.
+14.Створити хронологічний опис (хвилина:секунда) демонстрації та додати цей опис до опису відео на YouTube.
+15.Створити звіт до лабораторної роботи.
+16.Вказати у звіті посилання на створений відеозапис на YouTube  17.Експортувати створений звіт у формат PDF та завантажити його на платформу dl.nure.ua
+18.Експортувати увесь створений звіт у текстовий файл з кодуванням
+UTF8 та записати цей файл у GitHub репозиторій для лабораторних робіт.
+
+
+2 ОПИС ВИКОНАНОЇ РОБОТИ
+1. Розробка будови програмної системи
+1) Моделі в базі даних SQL Server Express:
+У процесі виконання лабораторної роботи було розроблено структуру бази даних, яка включає такі основні сутності:
+– Clients — клієнти сервісу оренди одягу;
+– Types — типи одягу;
+– Wears — одиниці одягу, доступні для оренди;
+– Rents — інформація про оренду одягу клієнтами;
+– Admins — адміністратори системи.
+Для кожної сутності визначено первинні ключі та відповідні атрибути.
+Взаємодія з базою даних реалізована за допомогою ORM Entity Framework Core.
+
+2) Контролери серверної частини
+Для забезпечення взаємодії клієнтської частини з серверною було розроблено REST-контролери, кожен з яких відповідає окремій сутності бази даних:
+– ClientsController — керування клієнтами;
+– WearTypesController — керування типами одягу;
+– WearsController — керування одягом;
+– RentsController — керування операціями оренди;
+– AdminsController — керування адміністраторами системи.
+Кожен контролер реалізує повний набір CRUD-операцій (Create, Read, Update, Delete) з використанням HTTP-методів GET, POST, PUT, DELETE.
+
+3) Технологічний стек
+Під час розробки серверної частини програмної системи було використано наступний технологічний стек:
+– Платформа: .NET 8;
+– Фреймворк: ASP.NET Core Web API;
+– Мова програмування: C#;
+– База даних: SQL Server Express;
+– ORM: Entity Framework Core;
+– Архітектура: REST;
+– Документація API: Swagger (OpenAPI);
+– Тестування API: Swagger UI;
+– Взаємодія з БД: через DbContext та DbSet.
+
+2.	Створення UML діаграми прецедентів 
+
+
+ 
+Рисунок 1 – UML діаграма прецедентів адміна 
+
+ 
+Рисунок 2 – UML діаграма прецедентів клієнта
+
+3.	Створення ER діаграми даних 
+
+ 
+
+Рисунок 3 – ER-діаграма
+ 
+На основі логічної моделі реалізовано фізичну структуру бази даних. Детальна схема таблиць із зазначенням типів даних та обмежень цілісності наведена на рис 4. 
+
+ 
+Рисунок 5 – Схема БД
+ 
+4.	Розробка функцій роботи з БД 
+
+Fluent API (Entity Framework Core)
+modelBuilder.Entity<Client>(entity =>
+{
+    entity.HasKey(c => c.client_id);
+
+    entity.Property(c => c.name_surname)
+          .IsRequired()
+          .HasMaxLength(100);
+
+    entity.Property(c => c.telephone)
+          .HasMaxLength(50);
+
+    entity.Property(c => c.email)
+          .HasMaxLength(100);
+
+    entity.HasMany<Rent>()
+          .WithOne()
+          .HasForeignKey(r => r.client_id)
+          .OnDelete(DeleteBehavior.Restrict);
+});
+
+Клас Client
+public class Client
+{
+    public int client_id { get; set; }
+
+    [MaxLength(100)]
+    public string name_surname { get; set; }
+
+    [MaxLength(50)]
+    public string telephone { get; set; }
+
+    [MaxLength(50)]
+    public string client_gender { get; set; }
+
+    [MaxLength(100)]
+    public string email { get; set; }
+
+    [MaxLength(50)]
+    public string password { get; set; }
+}
+Основні операції з БД (CRUD)
+CREATE
+[HttpPost]
+public async Task<ActionResult<Client>> CreateAsync([FromBody] Client client)
+{
+    _context.Clients.Add(client);
+    await _context.SaveChangesAsync();
+    return Ok(client);
+}
+
+READ (by id)
+[HttpGet("{id}")]
+[ActionName(nameof(GetByIdAsync))]
+public async Task<ActionResult<Client>> GetByIdAsync(int id)
+{
+    var client = await _context.Clients.FindAsync(id);
+    if (client == null)
+        return NotFound();
+
+    return Ok(client);
+}
+
+READ (all)
+[HttpGet]
+public async Task<ActionResult<List<Client>>> GetAllAsync()
+{
+    return Ok(await _context.Clients.ToListAsync());
+}
+
+UPDATE
+[HttpPut("{id}")]
+public async Task<IActionResult> UpdateAsync(int id, [FromBody] Client client)
+{
+    if (id != client.client_id)
+        return BadRequest();
+
+    _context.Entry(client).State = EntityState.Modified;
+    await _context.SaveChangesAsync();
+
+    return NoContent();
+}
+
+DELETE
+[HttpDelete("{id}")]
+public async Task<IActionResult> DeleteAsync(int id)
+{
+    var client = await _context.Clients.FindAsync(id);
+    if (client == null)
+        return NotFound();
+
+    _context.Clients.Remove(client);
+    await _context.SaveChangesAsync();
+
+    return NoContent();
+}
+
+5. Специфікація прикладного програмного інтерфейсу (API)
+Клієнти (Clients):
+– GET /api/Clients — отримання списку клієнтів;
+– POST /api/Clients — створення нового клієнта;
+– GET /api/Clients/{id} — отримання клієнта за ідентифікатором;
+– PUT /api/Clients/{id} — оновлення даних клієнта;
+– DELETE /api/Clients/{id} — видалення клієнта.
+
+Типи одягу (WearTypes):
+– GET /api/WearTypes — отримання списку типів одягу;
+– POST /api/WearTypes — створення нового типу одягу;
+– GET /api/WearTypes/{id} — отримання типу одягу за ідентифікатором;
+– PUT /api/WearTypes/{id} — оновлення типу одягу;
+– DELETE /api/WearTypes/{id} — видалення типу одягу.
+
+Одяг (Wears):
+– GET /api/Wears — отримання списку одягу;
+– POST /api/Wears — додавання нового одягу;
+– GET /api/Wears/{id} — отримання одягу за ідентифікатором;
+– PUT /api/Wears/{id} — оновлення інформації про одяг;
+– DELETE /api/Wears/{id} — видалення одягу.
+
+Оренда (Rents):
+– GET /api/Rents — отримання списку оренд;
+– POST /api/Rents — оформлення нової оренди;
+– GET /api/Rents/{id} — отримання інформації про оренду;
+– PUT /api/Rents/{id} — оновлення даних оренди;
+– DELETE /api/Rents/{id} — видалення оренди.
+
+Адміністратори (Admins):
+– GET /api/Admins — отримання списку адміністраторів;
+– POST /api/Admins — створення нового адміністратора;
+– GET /api/Admins/{id} — отримання адміністратора за ідентифікатором;
+– PUT /api/Admins/{id} — оновлення даних адміністратора;
+– DELETE /api/Admins/{id} — видалення адміністратора.
+ 
+
+Рисунок 6 – Приклад зі Свагеру
+ 
+Висновок
+У ході виконання лабораторної роботи було розроблено серверну частину програмної системи Click&Rent. Спроєктовано структуру бази даних, реалізовано зв’язки між сутностями за допомогою Entity Framework Core та створено REST API з повним набором CRUD-операцій. Працездатність серверної частини перевірено з використанням Swagger UI, що підтверджує коректну роботу прикладного програмного інтерфейсу та взаємодію з базою даних.
+Посилання на GitHub:  https://github.com/NureSytnykPolina/ClickandRent
+Посилання на відеозапис: 
 
