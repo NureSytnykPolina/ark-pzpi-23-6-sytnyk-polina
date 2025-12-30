@@ -138,7 +138,7 @@ public async Task ForceCloseRentAsync(int rentId)
 •	URL: /api/admin/stats
 •	Результат: Отримано актуальні статистичні дані системи.
 
-Посилання на GitHub:  https://github.com/NureSytnykPolina/ClickandRent
+Посилання на GitHub:  https://github.com/NureSytnykPolina/Click-Rent/tree/master/Click%26Rent
 Посилання на відеозапис:  https://youtu.be/hV81KG_iYyU
 Хронологічний опис відеозапису:
 Бізнес логіка - 00:15 
