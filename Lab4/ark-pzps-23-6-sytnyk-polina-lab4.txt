@@ -1,1 +1,182 @@
 
+Кафедра «Програмна інженерія»
+
+
+ЗВІТ
+з лабораторної роботи №4
+з дисципліни «Аналіз та рефакторинг коду»
+
+
+
+
+Виконала:	                                       Прийняв:
+ст. гр. ПЗПІ-23-6	                                асистент кафедри ПІ
+Ситник П.А.	                                       Дашенков Д.С.
+
+
+
+
+
+
+
+
+
+
+
+
+
+Харків 2025
+Завдання:
+1.	Розробити будову програмного забезпечення ІоТ клієнта.
+2.	Створити UML діаграму прецедентів для ІоТ клієнта.
+3.	Розробити бізнес логіку (математину обробку повʼязаних із предметною областю даних) та функції налаштування ІоТ клієнта.
+4.	Створити діаграму діяльності для ІоТ клієнта.
+5.	Створити програмну реалізацію бізнес логіки та функцій налаштування ІоТ клієнта.
+6.	Перевірити роботу ІоТ клієнта
+
+2. ОПИС ІНЖЕНЕРНИХ РІШЕНЬ
+2.1 Архітектура системи
+Система реалізована у клієнт-серверній архітектурі, де IoT-клієнт виступає джерелом телеметричних даних, а серверна частина системи Click&Rent — їх приймачем та обробником.
+•	IoT-клієнт (WearSensorSimulator) реалізований як окремий Java-додаток (Console Application), що імітує роботу розумного пристрою, встановленого на орендований предмет одягу;
+•	протокол взаємодії: HTTP 1.1;
+•	формат переданих даних: JSON;
+•	серверна частина: Web API Click&Rent, що приймає телеметрію для подальшого аналізу стану об’єктів оренди.
+Такий підхід дозволяє здійснювати дистанційний контроль умов зберігання та експлуатації орендованого одягу без фізичної присутності адміністратора.
+
+2.2 Бізнес-логіка IoT-клієнта
+Бізнес-логіка IoT-клієнта полягає у математичній обробці телеметричних даних, що характеризують умови експлуатації одягу.
+Реалізовано наступну логіку:
+•	генерація значень температури та вологості з випадковими коливаннями;
+•	обмеження значень вологості у допустимому діапазоні (0–100%);
+•	періодичне виконання збору та передачі даних кожні 3 секунди;
+•	формування JSON-пакету та відправка його на сервер.
+Отримані дані можуть використовуватися серверною частиною системи Click&Rent для оцінки ризиків пошкодження одягу, аналізу умов зберігання та прийняття управлінських рішень.
+
+3. UML ДІАГРАМИ
+3.1 Діаграма прецедентів (Use Case Diagram)
+Діаграма прецедентів відображає взаємодію основних акторів:
+IoT-клієнта, серверної частини Click&Rent та адміністратора системи.
+Основними прецедентами є:
+•	збір телеметричних даних;
+•	математична обробка показників;
+•	формування JSON-пакету;
+•	передача даних на сервер;
+•	аналіз стану орендованого одягу.
+ 
+Рисунок 3.1 – UML-діаграма прецедентів IoT-клієнта
+
+3.2 Діаграма діяльності (Activity Diagram)
+Діаграма діяльності описує алгоритм роботи IoT-клієнта та відображає життєвий цикл програми: ініціалізацію, генерацію та обробку даних, передачу інформації на сервер та очікування між ітераціями.
+ 
+Рисунок 3.2 – UML-діаграма діяльності IoT-клієнта
+
+4. ПРОГРАМНА РЕАЛІЗАЦІЯ
+4.1 Реалізація IoT-клієнта (WearSensorSimulator.java)
+IoT-клієнт реалізований мовою Java з використанням стандартного класу HttpClient для надсилання HTTP-запитів.
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.util.Random;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
+import java.security.SecureRandom;
+import java.security.cert.X509Certificate;
+
+public class WearSensorSimulator {
+
+    private static final int wearId = 1;
+    private static double temperature = 22.0;
+    private static double humidity = 55.0;
+
+    private static final Random random = new Random();
+
+    public static void main(String[] args) throws Exception {
+        System.out.println("IoT клієнт запущено...");
+
+        for (int i = 0; i < 10; i++) {
+            simulateEnvironment();
+            sendDataToServer();
+            Thread.sleep(3000);
+        }
+    }
+
+    //  Бізнес-логіка
+    private static void simulateEnvironment() {
+        temperature += random.nextDouble() * 2 - 1;
+        humidity += random.nextDouble() * 4 - 2;
+
+        if (humidity < 0) humidity = 0;
+        if (humidity > 100) humidity = 100;
+
+        System.out.println("Температура: " + temperature);
+        System.out.println("Вологість: " + humidity);
+    }
+
+    // Надсилання даних на сервер
+    private static void sendDataToServer() throws Exception {
+
+        String json = String.format(
+            java.util.Locale.US,
+            "{\"wearId\":%d,\"temperature\":%.2f,\"humidity\":%.2f}",
+            wearId,
+            temperature,
+            humidity
+        );
+
+        //  ВИМКНЕННЯ ПЕРЕВІРКИ SSL (для localhost)
+        TrustManager[] trustAllCerts = new TrustManager[]{
+            new X509TrustManager() {
+                public X509Certificate[] getAcceptedIssuers() { return null; }
+                public void checkClientTrusted(X509Certificate[] certs, String authType) {}
+                public void checkServerTrusted(X509Certificate[] certs, String authType) {}
+            }
+        };
+
+        SSLContext sslContext = SSLContext.getInstance("TLS");
+        sslContext.init(null, trustAllCerts, new SecureRandom());
+
+        HttpClient client = HttpClient.newBuilder()
+            .sslContext(sslContext)
+            .build();
+
+        HttpRequest request = HttpRequest.newBuilder()
+            .uri(new URI("https://localhost:7068/api/measurements"))
+            .header("Content-Type", "application/json")
+            .POST(HttpRequest.BodyPublishers.ofString(json))
+            .build();
+
+        HttpResponse<String> response =
+            client.send(request, HttpResponse.BodyHandlers.ofString());
+
+        System.out.println("Відповідь сервера: " + response.statusCode());
+    }
+}
+
+5. РЕЗУЛЬТАТИ ТЕСТУВАННЯ
+Тестування виконувалося шляхом запуску IoT-клієнта у середовищі Visual Studio та спостереження за результатами роботи в консолі.
+У процесі тестування:
+•	IoT-клієнт успішно генерував телеметричні дані;
+•	виконувалася передача JSON-пакетів на сервер Click&Rent;
+ 
+Рисунок 5.1 – Логи роботи IoT-клієнта
+
+ВИСНОВКИ
+У ході виконання лабораторної роботи №4 було розроблено IoT-клієнт для програмної системи дистанційної оренди одягу Click&Rent.
+Основні результати:
+•	створено Java-додаток, що імітує роботу розумного пристрою;
+•	реалізовано бізнес-логіку математичної обробки телеметричних даних;
+•	забезпечено передачу даних на сервер через REST API;
+•	побудовано UML-діаграми, що описують архітектуру та алгоритм роботи системи.
+Отримані результати підтверджують працездатність IoT-клієнта та можливість його використання для дистанційного контролю стану орендованих об’єктів.
+Посилання на GitHub:  https://github.com/NureSytnykPolina/ClickandRent
+Посилання на відеозапис:  https://youtu.be/pJ5dGJYzO2U
+Хронологічний опис відеозапису:
+WearTelemetry - 00:28 
+TelemetryService - 00-37 
+IoTSettings - 00:57 
+WearSensorSimulator - 1:10 
+Тестування - 2:39
+
+
