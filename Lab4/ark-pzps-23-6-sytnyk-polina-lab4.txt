@@ -170,7 +170,7 @@ public class WearSensorSimulator {
 •	забезпечено передачу даних на сервер через REST API;
 •	побудовано UML-діаграми, що описують архітектуру та алгоритм роботи системи.
 Отримані результати підтверджують працездатність IoT-клієнта та можливість його використання для дистанційного контролю стану орендованих об’єктів.
-Посилання на GitHub:  https://github.com/NureSytnykPolina/ClickandRent
+Посилання на GitHub: https://github.com/NureSytnykPolina/Click-Rent/tree/master/Click%26Rent
 Посилання на відеозапис:  https://youtu.be/pJ5dGJYzO2U
 Хронологічний опис відеозапису:
 WearTelemetry - 00:28 
